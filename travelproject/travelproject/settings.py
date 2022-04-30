@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +43,7 @@ INSTALLED_APPS = [
     'travelapp.apps.TravelappConfig',
     'ckeditor',
     'ckeditor_uploader',
+    'cloudinary'
 ]
 
 AUTH_USER_MODEL = 'travelapp.User'
@@ -57,6 +61,13 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'travelproject.urls'
+
+# cloudinary config
+cloudinary.config(
+  cloud_name = "dec25",
+  api_key = "752682513512722",
+  api_secret = "P6Sb5YZCvBFpcMYAyumZnIpewNU"
+)
 
 TEMPLATES = [
     {
