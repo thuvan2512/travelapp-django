@@ -1,11 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from cloudinary.models import  CloudinaryField
+from ckeditor.fields import RichTextField
 
 
-class Role(models.Model):
-    name = models.CharField(max_length = 50, null = False)
-    def __str__(self):
-        return self.name
 
 class Gender(models.Model):
     gender_type = models.CharField(max_length = 50, null = False)
@@ -16,8 +14,8 @@ class Gender(models.Model):
 class User(AbstractUser):
     gender = models.ForeignKey('Gender',related_name='users',null= True,on_delete=models.SET_NULL)
     date_of_birth = models.DateField(null=True)
-    avatar = models.ImageField(null=True, upload_to='users/%Y/%m')
-    role = models.ForeignKey('Role', related_name='users',null = True,on_delete = models.SET_NULL)
+    avatar = CloudinaryField('avatar',default = '')
+    is_customer = models.BooleanField(default= False,verbose_name='Customer status')
     home_town = models.CharField(max_length=50,null= True, blank= True)
     phone = models.CharField(max_length=10,null= True, blank= True)
 
@@ -30,25 +28,21 @@ class ModelBase(models.Model):
         abstract = True
 
 
-class ImageBase(ModelBase):
-    image = models.ImageField(null = True, upload_to = 'images/%Y/%m')
+class ImageTour(ModelBase):
+    image = CloudinaryField('image',default = '')
     descriptions = models.CharField(max_length = 255,null = True)
+    tour_info = models.ForeignKey('TourInfo', on_delete = models.CASCADE, related_name = 'images',null=True)
     class Meta:
-        abstract = True
+        verbose_name = 'Image of tour'
 
-
-class ImageTour(ImageBase):
-    tour_info = models.ForeignKey('TourInfo', on_delete = models.CASCADE, related_name = 'images')
-
-
-class ImageNews(ImageBase):
-    news = models.ForeignKey('News', on_delete = models.CASCADE, related_name = 'images')
 
 
 class News(ModelBase):
     title = models.CharField(max_length = 50, default="none")
-    content = models.CharField(max_length = 1024, blank = True)
+    content = RichTextField(null=True)
     author = models.ForeignKey('User', on_delete = models.SET_NULL, related_name = 'list_news', null = True)
+    class Meta:
+        verbose_name = 'New'
 
 class Tour(ModelBase):
     name = models.CharField(max_length=100,null= False, default="none")
@@ -64,9 +58,11 @@ class Tour(ModelBase):
 
 class TourInfo(ModelBase):
     location = models.CharField(max_length = 50, default="none")
-    description = models.CharField(max_length = 255, blank = True,null = True)
+    description = RichTextField(null=True)
     def __str__(self):
         return self.location
+    class Meta:
+        verbose_name = 'Tour information'
 
 
 class BookTour(ModelBase):
@@ -84,21 +80,24 @@ class ActionBase(models.Model):
 class CommentBase(ActionBase):
     created_date = models.DateTimeField(auto_now_add = True)
     updated_date = models.DateTimeField(auto_now = True)
+    content = models.CharField(max_length=255,blank= True)
     class Meta:
         abstract = True
 
 
 class Like(ActionBase):
     state = models.BooleanField(default= True)
+    news = models.ForeignKey('News', on_delete=models.CASCADE, related_name='likes',null= True)
 
 
 class CommentNews(CommentBase):
-    content = models.CharField(max_length=255,blank= True)
+    news = models.ForeignKey('News',on_delete=models.CASCADE,related_name='comments',null= True)
 
 
 class CommentTour(CommentBase):
-    content = models.CharField(max_length=255,blank= True)
+    tour = models.ForeignKey('Tour',on_delete=models.CASCADE,related_name='comments',null= True)
 
 
 class Rate(ActionBase):
     star_rate = models.IntegerField(default=5)
+    tour = models.ForeignKey('Tour',on_delete=models.CASCADE,related_name='rates',null=True)
