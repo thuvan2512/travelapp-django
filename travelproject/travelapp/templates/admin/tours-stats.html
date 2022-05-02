@@ -1,0 +1,58 @@
+{% extends 'admin/base_site.html' %}
+{% block title %} tours statistics {% endblock%}
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('TOUR STATISTICS PAGE') }}</a></h1>
+{% endblock %}
+{% block content %}
+<h1>Thống kê tổng quan</h1>
+<h3>Tổng số tour du lịch: <span style="color:red">{{ count }} </span></h3>
+<h3> Số lượng các đơn đặt tour:<span style="color: red"> {{booking_total}}</span></h3>
+<ul>
+    {% for s in booking_stats %}
+    <li>{{ s.name }} => Số lượng đặt: <span style="color: red">{{ s.booking_counter }}</span></li>
+    {% endfor %}
+</ul>
+<div style="width: 80%;height: 100px">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <canvas id="myChart" width="100%" height="30%"></canvas>
+<script>
+const ctx = document.getElementById('myChart');
+const myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{labels|safe}},
+        datasets: [{
+            barPercentage: 0.5,
+            minBarLength: 1,
+            label: '# Booking tour statistics',
+            data: {{data|safe}},
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+</div>
+{% endblock %}
