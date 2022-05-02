@@ -43,7 +43,10 @@ INSTALLED_APPS = [
     'travelapp.apps.TravelappConfig',
     'ckeditor',
     'ckeditor_uploader',
-    'cloudinary'
+    'cloudinary',
+    'rest_framework',
+    'drf_yasg',
+    'debug_toolbar',
 ]
 
 AUTH_USER_MODEL = 'travelapp.User'
@@ -58,8 +61,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
+INTERNAL_IPS = [
+    '127.0.0.1'
+    ]
 ROOT_URLCONF = 'travelproject.urls'
 
 # cloudinary config
