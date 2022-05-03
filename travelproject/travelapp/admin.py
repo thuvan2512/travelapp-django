@@ -1,6 +1,8 @@
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Permission,Group
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Sum
 from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
@@ -10,10 +12,14 @@ from django.urls import path
 
 
 class NewsAdmin(admin.ModelAdmin):
-    # model = News
+    model = News
     search_fields = ('title',)
     list_display = ('title','author')
     list_filter = ('author','created_date','updated_date')
+
+class TagAdmin(admin.ModelAdmin):
+    model = Tag
+    search_fields = ('name',)
 
 class MyUserAdmin(UserAdmin):
     model = User
@@ -80,17 +86,22 @@ class ImageTourInlineAdmin(admin.TabularInline):
 
 
 class TourAdmin(admin.ModelAdmin):
+    model = Tour
     exclude = ('tag',)
+    list_display = ('name','attraction')
+    search_fields = ('name',)
     form = TourForm
     inlines = [TourTagInlineAdmin,ImageTourInlineAdmin]
 
 
-class TourInfoAdmin(admin.ModelAdmin):
+class AttractionAdmin(admin.ModelAdmin):
+    search_fields = ('location',)
     form = AttractionsForm
 
 class ImageTourAdmin(admin.ModelAdmin):
     model = ImageTour
     readonly_fields = ('image_view',)
+    search_fields = ('descriptions',)
     def image_view(self, obj):
         if (obj.image):
             return mark_safe(
@@ -102,6 +113,13 @@ class ImageTourAdmin(admin.ModelAdmin):
         }),
     )
 
+class PermissionAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
+
+class BillAdmin(admin.ModelAdmin):
+    model = Bill
+    list_filter = ('payment_state','payment_type','total_price')
+
 class MyAdminSite(admin.AdminSite):
     site_header = 'TRAVEL APP MANAGEMENT'
     site_title = 'Travel App Admin'
@@ -109,22 +127,26 @@ class MyAdminSite(admin.AdminSite):
         return [
                    path('tours-stats/', self.stats_view)
                ] + super().get_urls()
+
     def stats_view(self, request):
-        labels =[]
-        data = []
-        count = Tour.objects.count()
-        booking_stats = Tour.objects.annotate(booking_counter=Count('customers')).values('id', 'name', 'booking_counter').order_by('-booking_counter')
-        booking_total = BookTour.objects.count()
-        for s in booking_stats:
-            labels.append(s['name'])
-            data.append(s['booking_counter'])
-        return TemplateResponse(request, 'admin/tours-stats.html', {
-            'count': count,
-            'booking_stats': booking_stats,
-            'booking_total':booking_total,
-            'labels': labels,
-            'data': data,
-        })
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        else:
+            labels =[]
+            data = []
+            count = Tour.objects.count()
+            booking_stats = Tour.objects.annotate(booking_counter=Count('customers')).values('id', 'name', 'booking_counter').order_by('-booking_counter')
+            booking_total = BookTour.objects.count()
+            for s in booking_stats:
+                labels.append(s['name'])
+                data.append(s['booking_counter'])
+            return TemplateResponse(request, 'admin/tours-stats.html', {
+                'count': count,
+                'booking_stats': booking_stats,
+                'booking_total':booking_total,
+                'labels': labels,
+                'data': data,
+            })
 
 
 
@@ -132,8 +154,10 @@ admin_site = MyAdminSite('travelapp')
 admin_site.register(User,MyUserAdmin)
 admin_site.register(ImageTour,ImageTourAdmin)
 admin_site.register(News,NewsAdmin)
-admin_site.register(Attraction, TourInfoAdmin)
+admin_site.register(Attraction, AttractionAdmin)
 admin_site.register(Tour, TourAdmin)
+admin_site.register(Permission,PermissionAdmin)
+admin_site.register(Group)
 admin_site.register(BookTour)
-admin_site.register(Tag)
+admin_site.register(Tag,TagAdmin)
 admin_site.register(Bill)

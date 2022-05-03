@@ -59,7 +59,7 @@ class Tour(ModelBase):
     attraction = models.ForeignKey('Attraction',on_delete=models.PROTECT,related_name='tours',null=True)
     customers = models.ManyToManyField('User', through= 'BookTour',related_name='tours')
     note = RichTextField(null=True)
-    tag = models.ManyToManyField('Tag')
+    tag = models.ManyToManyField('Tag',related_name='tours')
     def __str__(self):
         return self.name
 
