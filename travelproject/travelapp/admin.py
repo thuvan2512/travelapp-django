@@ -114,6 +114,10 @@ class ImageTourAdmin(admin.ModelAdmin):
             'fields': ('tour','active','image_view','image','descriptions')
         }),
     )
+class BookTourAdmin(admin.ModelAdmin):
+    list_display = ('name_display','created_date','updated_date')
+    def name_display(self,obj):
+        return obj.__str__()
 
 class PermissionAdmin(admin.ModelAdmin):
     search_fields = ('name',)
@@ -160,6 +164,6 @@ admin_site.register(Attraction, AttractionAdmin)
 admin_site.register(Tour, TourAdmin)
 admin_site.register(Permission,PermissionAdmin)
 admin_site.register(Group)
-admin_site.register(BookTour)
+admin_site.register(BookTour,BookTourAdmin)
 admin_site.register(Tag,TagAdmin)
 admin_site.register(Bill)

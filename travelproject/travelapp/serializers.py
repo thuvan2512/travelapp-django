@@ -54,3 +54,7 @@ class CustomerSerializer(ModelSerializer):
                 'read_only': True
             },
         }
+class BookTourSerializer(ModelSerializer):
+    class Meta:
+        model = BookTour
+        fields = '__all__'
