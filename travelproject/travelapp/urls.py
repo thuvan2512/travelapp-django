@@ -7,6 +7,7 @@ router = routers.DefaultRouter()
 router.register(prefix="tags",viewset = views.TagViewSet,basename='tag')
 router.register(prefix="attractions",viewset = views.AttractionViewSet,basename='attraction')
 router.register(prefix="tours",viewset = views.TourViewSet,basename='tour')
+router.register(prefix="book-tour",viewset = views.BookTourViewSet,basename='book_tour')
 
 urlpatterns = [
     path('', include(router.urls)),
