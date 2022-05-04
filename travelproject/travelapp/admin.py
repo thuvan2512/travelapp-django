@@ -7,6 +7,8 @@ from django.db.models import Count, Sum
 from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
 from django import forms
+
+from . import cloud_path
 from .models import *
 from django.urls import path
 
@@ -30,7 +32,7 @@ class MyUserAdmin(UserAdmin):
     def avatar_view(self, user):
         if (user.avatar):
             return mark_safe(
-                "<img src='https://res.cloudinary.com/dec25/{url}' alt='avatar' width='120' />".format(url=user.avatar)
+                "<img src='{cloud_path}{url}' alt='avatar' width='120' />".format(cloud_path = cloud_path,url=user.avatar)
             )
     fieldsets = (
         ('Login info', {
@@ -81,7 +83,7 @@ class ImageTourInlineAdmin(admin.TabularInline):
     def image_view(self, obj):
         if (obj.image):
             return mark_safe(
-                "<img src='https://res.cloudinary.com/dec25/{url}' alt='image-tour' width='120' />".format(url=obj.image)
+                "<img src='{cloud_path}{url}' alt='image-tour' width='120' />".format(cloud_path = cloud_path,url=obj.image)
             )
 
 
@@ -105,7 +107,7 @@ class ImageTourAdmin(admin.ModelAdmin):
     def image_view(self, obj):
         if (obj.image):
             return mark_safe(
-                "<img src='https://res.cloudinary.com/dec25/{url}' alt='image-tour' width='120' />".format(url=obj.image)
+                "<img src='{cloud_path}{url}' alt='image-tour' width='120' />".format(cloud_path = cloud_path,url=obj.image)
             )
     fieldsets = (
         ('Image of tour', {
