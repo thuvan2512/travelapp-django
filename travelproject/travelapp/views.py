@@ -58,6 +58,7 @@ class TourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
     queryset = Tour.objects.filter(active = True)
     serializer_class = TourSerializer
     pagination_class = TourPaginator
+    permission_classes = [permissions.AllowAny]
     def get_queryset(self):
         query = self.queryset
         kw = self.request.query_params.get('kw')
@@ -104,10 +105,10 @@ class BookTourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPI
                       generics.DestroyAPIView,generics.UpdateAPIView):
     queryset = BookTour.objects.all()
     serializer_class = BookTourSerializer
-    # def get_permissions(self):
-    #     if self.action in ['create']:
-    #         return [permissions.IsAuthenticated()]
-    #     return [OwnerPermisson()]
+    def get_permissions(self):
+        if self.action in ['create']:
+            return [permissions.IsAuthenticated()]
+        return [OwnerPermisson()]
     def create(self, request):
         err_msg = None
         user_int = request.data.get('user')
@@ -214,7 +215,7 @@ class UserViewSet(viewsets.ViewSet,generics.CreateAPIView):
         pass
 
 class SendMailAPIView(APIView):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         email = request.data.get('email')
         subject = request.data.get('subject')
