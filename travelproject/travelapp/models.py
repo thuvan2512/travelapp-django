@@ -82,6 +82,7 @@ class BookTour(ModelBase):
     tour = models.ForeignKey('Tour',on_delete=models.CASCADE)
     num_of_adults = models.IntegerField(default=0)
     num_of_children = models.IntegerField(default=0)
+    send_mail = models.BooleanField(default=False)
     def __str__(self):
         return " \"{0}\" --- \"{1}\" ".format(self.user.__str__(),self.tour.__str__())
     class Meta:
@@ -126,5 +127,7 @@ class TypeOfPayment(models.Model):
 class Bill(ModelBase):
     book_tour = models.OneToOneField('BookTour',on_delete=models.CASCADE,primary_key=True)
     payment_state = models.BooleanField(default= False)
-    payment_type = models.ForeignKey('TypeOfPayment', on_delete= models.PROTECT,related_name='bills',null=True)
+    payment_type = models.ForeignKey('TypeOfPayment', on_delete= models.PROTECT,related_name='bills',null=True,default=None)
     total_price = models.FloatField(default=0)
+    def __str__(self):
+        return "Bill --- {}".format(self.book_tour.__str__())

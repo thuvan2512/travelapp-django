@@ -7,7 +7,6 @@ from django.db.models import Count, Sum
 from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
 from django import forms
-
 from . import cloud_path
 from .models import *
 from django.urls import path
@@ -19,9 +18,11 @@ class NewsAdmin(admin.ModelAdmin):
     list_display = ('title','author')
     list_filter = ('author','created_date','updated_date')
 
+
 class TagAdmin(admin.ModelAdmin):
     model = Tag
     search_fields = ('name',)
+
 
 class MyUserAdmin(UserAdmin):
     model = User
@@ -58,11 +59,13 @@ class MyUserAdmin(UserAdmin):
         })
     )
 
+
 class AttractionsForm(forms.ModelForm):
     description = forms.CharField(widget=CKEditorUploadingWidget)
     class Meta:
         model = Attraction
         fields = '__all__'
+
 
 class TourForm(forms.ModelForm):
     note = forms.CharField(widget=CKEditorUploadingWidget)
@@ -100,6 +103,7 @@ class AttractionAdmin(admin.ModelAdmin):
     search_fields = ('location',)
     form = AttractionsForm
 
+
 class ImageTourAdmin(admin.ModelAdmin):
     model = ImageTour
     readonly_fields = ('image_view',)
@@ -114,17 +118,22 @@ class ImageTourAdmin(admin.ModelAdmin):
             'fields': ('tour','active','image_view','image','descriptions')
         }),
     )
+
+
 class BookTourAdmin(admin.ModelAdmin):
     list_display = ('name_display','created_date','updated_date')
     def name_display(self,obj):
         return obj.__str__()
 
+
 class PermissionAdmin(admin.ModelAdmin):
     search_fields = ('name',)
+
 
 class BillAdmin(admin.ModelAdmin):
     model = Bill
     list_filter = ('payment_state','payment_type','total_price')
+
 
 class MyAdminSite(admin.AdminSite):
     site_header = 'TRAVEL APP MANAGEMENT'
