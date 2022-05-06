@@ -155,3 +155,22 @@ REST_FRAMEWORK = {
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#send mail config
+#
+# EMAIL_USE_TLS = True
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'travel.agency.ou@gmail.com'
+# EMAIL_HOST_PASSWORD = '25122000Thu@'
+# DEFAULT_FROM_EMAIL = 'travel.agency.ou@gmail.com'
+# DEFAULT_TO_EMAIL = 'travel.agency.ou@gmail.com'
+
+
+#send mail config
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'travel.agency.ou@gmail.com'
+EMAIL_HOST_PASSWORD = '25122000Thu@'
+EMAIL_PORT = 587

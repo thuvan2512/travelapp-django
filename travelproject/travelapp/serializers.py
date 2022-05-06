@@ -54,7 +54,45 @@ class CustomerSerializer(ModelSerializer):
                 'read_only': True
             },
         }
+
 class BookTourSerializer(ModelSerializer):
     class Meta:
         model = BookTour
+        fields = '__all__'
+
+class UserSerializer(ModelSerializer):
+    avatar_path = serializers.SerializerMethodField(source='avatar')
+    def get_avatar_path(self, obj):
+        request = self.context['request']
+        if obj.avatar:
+            path = '{cloud_path}{image_name}'.format(cloud_path=cloud_path, image_name=obj.avatar)
+            return request.build_absolute_uri(path)
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'avatar', 'avatar_path']
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            }, 'avatar_path': {
+                'read_only': True
+            }, 'avatar': {
+                'write_only': True
+            }
+        }
+    def create(self, validated_data):
+        data = validated_data.copy()
+        user = User(**data)
+        user.set_password(user.password)
+        user.save()
+        return user
+class TypeOfPaymentSerializer(ModelSerializer):
+    class Meta:
+        model = TypeOfPayment
+        fields = ['payment_type']
+
+
+class BillSerializer(ModelSerializer):
+    payment_type = TypeOfPaymentSerializer()
+    class Meta:
+        model = Bill
         fields = '__all__'
