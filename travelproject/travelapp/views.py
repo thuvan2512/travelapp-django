@@ -1,16 +1,21 @@
 from django.core.mail import send_mail, EmailMessage
 from django.db.models import Q
 from django.shortcuts import render
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, generics,permissions,status
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from .models import *
 from .serializers import *
 from .paginators import *
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
+from django.contrib.auth import login, logout
+from django.contrib.auth import  authenticate
 from .perms import *
 from decimal import Decimal
 from datetime import datetime
+
 
 
 class TagViewSet(viewsets.ViewSet,generics.RetrieveAPIView,generics.ListAPIView):
@@ -264,3 +269,28 @@ class BillViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
     def get_payment_by_zalopay(self,request):
         pass
     #thanh toan xong phai gui mail
+
+
+@api_view(['GET','POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return Response(data={'message':"Login successfully"},status = status.HTTP_202_ACCEPTED)
+        else:
+            return Response(data={'error_msg':"Invalid user"}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'GET':
+        user = authenticate(request, username='thunv.admin', password='25122000Thu@')
+        login(request, user)
+        return Response(data={'message': "hahah"}, status=status.HTTP_202_ACCEPTED)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def logout_view(request):
+    logout(request)
+    return Response(status=status.HTTP_200_OK)

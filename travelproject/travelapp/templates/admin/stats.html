@@ -1,0 +1,206 @@
+{% extends 'admin/base_site.html' %}
+{% block title %} tours statistics {% endblock%}
+{% block branding %}
+<h1 id="site-name"><a href="">{{ site_header|default:_('TRAVEL AGENCY STATISTICS PAGE') }}</a></h1>
+{% endblock %}
+{% block breadcrumbs %}
+{%endblock%}
+{% block content %}
+<div class="container">
+    <h1 class="text-danger">Thống kê tổng quan</h1>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <h3 class="text-info">Tổng số địa điểm du lịch: <span style="color:red">{{ attraction_total}} </span></h3>
+    <h3 class="text-info">Tổng số tour khai thác: <span style="color:red">{{ tour_total}} </span></h3>
+    <h3 class="text-info"> Số lượng các đơn đặt tour trong năm {{current_year}}:<span style="color: red"> {{booking_total}}</span>
+    </h3>
+    <h3 class="text-info"> Số lượng các hóa đơn đã thanh toán trong năm {{current_year}}:<span style="color: red"> {{bill_paid_total}}</span>
+    </h3>
+    <div>
+        <div>
+            <script>
+        $(function () {
+            var ctx = document.getElementById('tour_bar').getContext('2d');
+            var data_tour = {
+                datasets: [{
+                    data: {{data_book_tour|safe}},
+                    backgroundColor: [
+                        '#3c8dbc',
+                        '#f39c12',
+                        '#00b894',
+                        '#d63031',
+                        '#2c3e50',
+                        '#f56954',
+                        '#e67e22',
+                        '#8e44ad',
+                        '#1abc9c',
+                        '#3498db',
+                        '#2ecc71',
+                        '#bdc3c7',
+                    ],
+                    label:"Tần suất đặt tour theo các tháng trong năm {{current_year}}",
+                    borderWidth: 1,
+                }],
+                labels: [
+                    'January',
+                    'February',
+                    'March',
+                    'April',
+                    'May',
+                    'June',
+                    'July',
+                    'August',
+                    'September',
+                    'October',
+                    'November',
+                    'December'
+                ]
+            };
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: data_tour,
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 30
+                        }
+                    }
+                }
+            });
+        });
+
+
+
+
+
+
+            </script>
+        </div>
+        <script>
+        console.info({{data_book_tour}})
+        $(function () {
+            var ctx_2 = document.getElementById("layanan_subbagian").getContext('2d');
+            var data_2 = {
+                datasets: [{
+                    data: [10, 20, 30],
+                    backgroundColor: [
+                        '#f56954',
+                        '#e67e22',
+                        '#3c8dbc',
+                        '#8e44ad',
+                        '#f39c12',
+                        '#00b894',
+                        '#d63031',
+                        '#2c3e50',
+                        '#1abc9c',
+                        '#3498db',
+                        '#2ecc71',
+                        '#bdc3c7',
+                    ],
+                }],
+                labels: [
+                    'Request',
+                    'Layanan',
+                    'Problem'
+                ]
+            };
+            var myDoughnutChart_2 = new Chart(ctx_2, {
+                type: 'doughnut',
+                data: data_2,
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 30
+                        }
+                    }
+                }
+            });
+        });
+
+
+
+
+
+
+
+        </script>
+        <div>
+            <div>
+                <br/>
+                <canvas id="tour_bar" width="800px" height="300px"></canvas>
+                <br/>
+                <br/>
+            </div>
+            <div class="dropdown">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                    Dropdown button
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#">Link 1</a>
+                    <a class="dropdown-item" href="#">Link 2</a>
+                    <a class="dropdown-item" href="#">Link 3</a>
+                </div>
+            </div>
+            <div>
+                <br/>
+                <canvas id="layanan_subbagian"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!--<div style="width: 80%;height: 100px">-->
+<!--    <div>-->
+<!--        <canvas id="myChart"></canvas>-->
+<!--    </div>-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
+<!--<script>-->
+<!--const ctx = document.getElementById('myChart');-->
+<!--const myChart = new Chart(ctx, {-->
+<!--    type: 'bar',-->
+<!--    data: {-->
+<!--        labels: {{labels|safe}},-->
+<!--        datasets: [{-->
+<!--            barPercentage: 0.5,-->
+<!--            minBarLength: 1,-->
+<!--            label: '# Booking tour statistics',-->
+<!--            data: {{data|safe}},-->
+<!--            backgroundColor: [-->
+<!--                'rgba(255, 99, 132, 0.2)',-->
+<!--                'rgba(54, 162, 235, 0.2)',-->
+<!--                'rgba(255, 206, 86, 0.2)',-->
+<!--                'rgba(75, 192, 192, 0.2)',-->
+<!--                'rgba(153, 102, 255, 0.2)',-->
+<!--                'rgba(255, 159, 64, 0.2)'-->
+<!--            ],-->
+<!--            borderColor: [-->
+<!--                'rgba(255, 99, 132, 1)',-->
+<!--                'rgba(54, 162, 235, 1)',-->
+<!--                'rgba(255, 206, 86, 1)',-->
+<!--                'rgba(75, 192, 192, 1)',-->
+<!--                'rgba(153, 102, 255, 1)',-->
+<!--                'rgba(255, 159, 64, 1)'-->
+<!--            ],-->
+<!--            borderWidth: 1-->
+<!--        }]-->
+<!--    },-->
+<!--    options: {-->
+<!--        scales: {-->
+<!--            y: {-->
+<!--                beginAtZero: true-->
+<!--            }-->
+<!--        }-->
+<!--    }-->
+<!--});-->
+<!--</script>-->
+<!--</div>-->
+{% endblock %}
