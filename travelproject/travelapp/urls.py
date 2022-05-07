@@ -15,4 +15,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path('admin/', admin_site.urls),
     path('send_mail/', views.SendMailAPIView.as_view(), name='send-mail'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
 ]

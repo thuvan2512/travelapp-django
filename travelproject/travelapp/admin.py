@@ -4,13 +4,14 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Permission,Group
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Sum
+from django.db.models.functions import TruncMonth
 from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
 from django import forms
 from . import cloud_path
 from .models import *
 from django.urls import path
-
+from datetime import date
 
 class NewsAdmin(admin.ModelAdmin):
     model = News
@@ -140,27 +141,37 @@ class MyAdminSite(admin.AdminSite):
     site_title = 'Travel App Admin'
     def get_urls(self):
         return [
-                   path('tours-stats/', self.stats_view)
+                   path('stats/', self.stats_view)
                ] + super().get_urls()
 
     def stats_view(self, request):
         if not request.user.is_superuser:
             raise PermissionDenied
         else:
-            labels =[]
-            data = []
-            count = Tour.objects.count()
-            booking_stats = Tour.objects.annotate(booking_counter=Count('customers')).values('id', 'name', 'booking_counter').order_by('-booking_counter')
-            booking_total = BookTour.objects.count()
-            for s in booking_stats:
-                labels.append(s['name'])
-                data.append(s['booking_counter'])
-            return TemplateResponse(request, 'admin/tours-stats.html', {
-                'count': count,
-                'booking_stats': booking_stats,
+            data_book_tour = []
+            tour_total = Tour.objects.count()
+            attraction_total = Attraction.objects.count()
+            booking_total = BookTour.objects.filter(created_date__year = date.today().year).count()
+            bill_paid_total = Bill.objects.filter(payment_state = True,created_date__year = date.today().year).count()
+            results_book_tour = BookTour.objects.filter(created_date__year = date.today().year)\
+                .annotate(month=TruncMonth('created_date')).values('month')\
+                .annotate(c=Count('pk')).values('month', 'c')
+            for i in range(12):
+                flag = False
+                for rs in results_book_tour:
+                    if i + 1 == rs['month'].month:
+                        data_book_tour.append(rs['c'])
+                        flag = True
+                        break
+                if not flag:
+                    data_book_tour.append(0)
+            return TemplateResponse(request, 'admin/stats.html', {
+                'tour_total': tour_total,
+                'attraction_total':attraction_total,
                 'booking_total':booking_total,
-                'labels': labels,
-                'data': data,
+                'bill_paid_total':bill_paid_total,
+                'current_year': date.today().year,
+                'data_book_tour': data_book_tour,
             })
 
 
