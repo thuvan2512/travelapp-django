@@ -10,6 +10,11 @@ router.register(prefix="tours",viewset = views.TourViewSet,basename='tour')
 router.register(prefix="book_tours",viewset = views.BookTourViewSet,basename='book_tour')
 router.register(prefix="users",viewset = views.UserViewSet,basename='user')
 router.register(prefix="bills",viewset = views.BillViewSet,basename='bill')
+router.register(prefix="type_of_payment",viewset = views.TypeOfPaymentViewSet,basename='type_of_payment')
+router.register(prefix="news",viewset = views.NewsViewSet,basename='news')
+router.register(prefix="comment_tour",viewset = views.CommentTourViewSet,basename='comment_tour')
+router.register(prefix="comment_news",viewset = views.CommentNewsViewSet,basename='comment_news')
+router.register(prefix="rate",viewset = views.RateViewSet,basename='rate')
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -58,6 +58,10 @@ class AttractionViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveA
         tours = self.get_object().tours
         return Response(data=TourSerializer(tours, many=True, context={'request': request}).data,
                         status=status.HTTP_200_OK)
+        # paginator = pagination.PageNumberPagination()
+        # pagination.PageNumberPagination.page_size = 2
+        # tours = paginator.paginate_queryset(tours, request)
+        # return paginator.get_paginated_response(TourSerializer(tours, many=True).data)
 
 class TourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView):
     queryset = Tour.objects.filter(active = True)
@@ -90,7 +94,7 @@ class TourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
                 query = query.filter(Q(price_for_adults__lte=Decimal(price_to)) | \
                                      Q(price_for_children__lte=Decimal(price_to)))
         return query
-    @action(methods=['get'], detail=True, url_path='customers')
+    @action(methods=['get'], detail=True, url_path='customers',permission_classes = [permissions.IsAuthenticated])
     def get_customers(self, request, pk):
         customers = self.get_object().customers
         return Response(data=CustomerSerializer(customers, many=True, context={'request': request}).data,
@@ -105,6 +109,25 @@ class TourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
         images = self.get_object().images
         return Response(data=ImageTourSerializer(images, many=True, context={'request': request}).data,
                         status=status.HTTP_200_OK)
+    @action(methods=['get'], url_path='comments', detail=True,permission_classes=[permissions.AllowAny])
+    def get_comments(self, request, pk):
+        tour = self.get_object()
+        comments = tour.comments
+        comments = comments.select_related('user')
+        paginator = pagination.PageNumberPagination()
+        pagination.PageNumberPagination.page_size = 10
+        comments = paginator.paginate_queryset(comments, request)
+        return paginator.get_paginated_response(CommentTourSerializer(comments, many=True).data)
+    @action(methods=['get'], url_path='rate', detail=True,permission_classes=[permissions.AllowAny])
+    def get_rate(self, request, pk):
+        tour = self.get_object()
+        rate = tour.rate
+        rate = rate.select_related('user')
+        paginator = pagination.PageNumberPagination()
+        pagination.PageNumberPagination.page_size = 10
+        comments = paginator.paginate_queryset(rate, request)
+        return paginator.get_paginated_response(RateSerializer(rate, many=True).data)
+
 
 class BookTourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView,
                       generics.DestroyAPIView,generics.UpdateAPIView):
@@ -145,15 +168,15 @@ class BookTourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPI
                 return Response(data={
                     'error_msg': err_msg
                 },status=status.HTTP_400_BAD_REQUEST)
-    @action(methods=['get'], detail=True, url_path='total_price')
+    @action(methods=['get'], detail=True, url_path='total_price',permission_classes = [permissions.IsAuthenticated])
     def get_total_price(self, request, pk):
         book_tour =  self.get_object()
         tour = self.get_object().tour
         total_price = tour.price_for_children * book_tour.num_of_children + book_tour.num_of_adults * tour.price_for_adults
         return Response(data={'total-price':total_price},
                         status=status.HTTP_200_OK)
-    @action(methods=['get'], detail=True, url_path='send_mail')
-    def get_send_mail(self, request, pk):
+    @action(methods=['get'], detail=True, url_path='send_mail',permission_classes = [permissions.IsAuthenticated])
+    def send_mail(self, request, pk):
         book_tour = self.get_object()
         error_msg = None
         if book_tour:
@@ -216,7 +239,7 @@ class UserViewSet(viewsets.ViewSet,generics.CreateAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     @action(methods=['post'], url_path='reset_password', detail=False)
-    def get_reset_password(self,request):
+    def reset_password(self,request):
         pass
 
 class SendMailAPIView(APIView):
@@ -260,13 +283,13 @@ class BillViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
     #     except Bill.DoesNotExist:
     #         return Response(status=status.HTTP_404_NOT_FOUND)
     @action(methods=['post'], url_path='payment_by_cash', detail=True)
-    def get_payment_by_cash(self,request):
+    def payment_by_cash(self,request):
         pass
     @action(methods=['post'], url_path='payment_by_momo', detail=True)
-    def get_payment_by_momo(self,request):
+    def payment_by_momo(self,request):
         pass
     @action(methods=['post'], url_path='payment_by_zalopay', detail=True)
-    def get_payment_by_zalopay(self,request):
+    def payment_by_zalopay(self,request):
         pass
     #thanh toan xong phai gui mail
 
@@ -294,3 +317,118 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return Response(status=status.HTTP_200_OK)
+
+
+class NewsViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView):
+    permission_classes = [permissions.AllowAny]
+    pagination_class = NewsPaginator
+    serializer_class = NewsSerializer
+    queryset = News.objects.filter(active = True)
+    def get_queryset(self):
+        news = self.queryset
+        news = news.select_related('author')
+        return news
+    @action(methods=['post'], url_path='like', detail=True,permission_classes = [permissions.IsAuthenticated])
+    def like(self, request, pk):
+        news = self.get_object()
+        user = request.user
+        like, _ = Like.objects.get_or_create(news = news, user=user)
+        like.state = not like.state
+        like.save()
+        return Response(status=status.HTTP_201_CREATED)
+
+    @action(methods=['get'], url_path='count_like', detail=True, permission_classes=[permissions.AllowAny])
+    def count_like(self, request, pk):
+        news = self.get_object()
+        total_like = news.likes.filter(state = True).count()
+        return Response(data={
+            "total_like":total_like
+        },status=status.HTTP_200_OK)
+
+    @action(methods=['get'], url_path='comments', detail=True,permission_classes=[permissions.AllowAny])
+    def get_comments(self, request, pk):
+        news = self.get_object()
+        comments = news.comments
+        comments = comments.select_related('user')
+        paginator = pagination.PageNumberPagination()
+        pagination.PageNumberPagination.page_size = 10
+        comments = paginator.paginate_queryset(comments, request)
+        return paginator.get_paginated_response(CommentNewsSerializer(comments, many=True).data)
+
+
+class TypeOfPaymentViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = TypeOfPaymentSerializer
+    pagination_class = None
+    queryset = TypeOfPayment.objects.all()
+
+
+class CommentTourViewSet(viewsets.ViewSet,generics.UpdateAPIView,generics.DestroyAPIView):
+    queryset = CommentTour.objects.all()
+    serializer_class = CreateCommentTourSerializer
+    def get_permissions(self):
+        if self.action in ['partial_update','update', 'destroy']:
+            return [OwnerPermisson()]
+        return [permissions.IsAuthenticated()]
+    def create(self, request):
+        user = request.user
+        if user:
+            try:
+                content = request.data.get('content')
+                tour = Tour.objects.get(pk=request.data.get('tour'))
+            except:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            if tour and content:
+                comment_tour = CommentTour.objects.create(user = user,tour = tour,content = content)
+                return Response(data=CreateCommentTourSerializer(comment_tour).data,status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data={"error_message":"User not found"},status = status.HTTP_400_BAD_REQUEST)
+
+
+class CommentNewsViewSet(viewsets.ViewSet,generics.UpdateAPIView,generics.DestroyAPIView):
+    queryset = CommentNews.objects.all()
+    serializer_class = CreateCommentNewsSerializer
+    def get_permissions(self):
+        if self.action in ['partial_update','update', 'destroy']:
+            return [OwnerPermisson()]
+        return [permissions.IsAuthenticated()]
+    def create(self, request):
+        user = request.user
+        if user:
+            try:
+                content = request.data.get('content')
+                news = News.objects.get(pk=request.data.get('news'))
+            except:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            if news and content:
+                comment_news = CommentNews.objects.create(user = user,news = news,content = content)
+                return Response(data=CreateCommentNewsSerializer(comment_news).data,status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data={"error_message":"User not found"},status = status.HTTP_400_BAD_REQUEST)
+
+
+class RateViewSet(viewsets.ViewSet,generics.UpdateAPIView,generics.DestroyAPIView):
+    queryset = Rate.objects.all()
+    serializer_class = CreateRateNewsSerializer
+    def get_permissions(self):
+        if self.action in ['partial_update','update', 'destroy']:
+            return [OwnerPermisson()]
+        return [permissions.IsAuthenticated()]
+    def create(self, request):
+        user = request.user
+        if user:
+            try:
+                star_rate = request.data.get('star_rate')
+                tour = Tour.objects.get(pk=request.data.get('tour'))
+            except:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            if tour and star_rate:
+                r, _ = Rate.objects.get_or_create(tour = tour, user=user)
+                r.star_rate = star_rate
+                r.save()
+                return Response(data=CreateRateNewsSerializer(r).data,status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(data={"error_message":"User not found"},status = status.HTTP_400_BAD_REQUEST)

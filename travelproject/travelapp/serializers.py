@@ -19,10 +19,11 @@ class AttractionSerializer(ModelSerializer):
 class ImageTourSerializer(ModelSerializer):
     image_path = serializers.SerializerMethodField(source='image')
     def get_image_path(self, obj):
-        request = self.context['request']
+        # request = self.context['request']
+        # return request.build_absolute_uri(path)
         if obj.image:
             path = '{cloud_path}{image_name}'.format(cloud_path=cloud_path,image_name = obj.image)
-            return request.build_absolute_uri(path)
+            return path
     class Meta:
         model = ImageTour
         fields = ['image_path','descriptions']
@@ -42,10 +43,9 @@ class TourSerializer(ModelSerializer):
 class CustomerSerializer(ModelSerializer):
     avatar_path = serializers.SerializerMethodField(source='avatar')
     def get_avatar_path(self, obj):
-        request = self.context['request']
         if obj.avatar:
             path = '{cloud_path}{image_name}'.format(cloud_path=cloud_path, image_name=obj.avatar)
-            return request.build_absolute_uri(path)
+            return path
     class Meta:
         model = User
         fields = ['avatar_path','username','first_name','last_name','date_of_birth','phone','email']
@@ -63,10 +63,9 @@ class BookTourSerializer(ModelSerializer):
 class UserSerializer(ModelSerializer):
     avatar_path = serializers.SerializerMethodField(source='avatar')
     def get_avatar_path(self, obj):
-        request = self.context['request']
         if obj.avatar:
             path = '{cloud_path}{image_name}'.format(cloud_path=cloud_path, image_name=obj.avatar)
-            return request.build_absolute_uri(path)
+            return  path
     class Meta:
         model = User
         fields = ['username', 'password', 'first_name', 'last_name', 'email', 'avatar', 'avatar_path']
@@ -96,3 +95,55 @@ class BillSerializer(ModelSerializer):
     class Meta:
         model = Bill
         fields = '__all__'
+
+
+class NewsSerializer(ModelSerializer):
+    author = UserSerializer()
+    class Meta:
+        model = News
+        fields = '__all__'
+
+class CommentNewsSerializer(ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        exclude = ['news']
+        model = CommentNews
+
+class CommentTourSerializer(ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        exclude = ['tour']
+        model = CommentTour
+
+
+class CreateCommentTourSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentTour
+        fields = ['id','content', 'tour', 'user']
+        extra_kwargs = {
+            'user': {
+                'read_only': True
+            }
+        }
+
+
+class CreateCommentNewsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentNews
+        fields = ['id','content', 'news', 'user']
+        extra_kwargs = {
+            'user': {
+                'read_only': True
+            }
+        }
+
+
+class CreateRateNewsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rate
+        fields = ['id','star_rate', 'tour', 'user']
+        extra_kwargs = {
+            'user': {
+                'read_only': True
+            }
+        }
