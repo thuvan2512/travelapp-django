@@ -103,21 +103,31 @@ class CommentBase(ActionBase):
 
 
 class Like(ActionBase):
-    state = models.BooleanField(default= True)
+    state = models.BooleanField(default= False )
     news = models.ForeignKey('News', on_delete=models.CASCADE, related_name='likes',null= True)
+    class Meta:
+        unique_together = ('user', 'news')
 
 
 class CommentNews(CommentBase):
     news = models.ForeignKey('News',on_delete=models.CASCADE,related_name='comments',null= True)
+    def __str__(self):
+        return " \"{0}\" --- \"{1}\" ".format(self.user.__str__(),self.news.__str__())
 
 
 class CommentTour(CommentBase):
     tour = models.ForeignKey('Tour',on_delete=models.CASCADE,related_name='comments',null= True)
+    def __str__(self):
+        return " \"{0}\" --- \"{1}\" ".format(self.user.__str__(),self.tour.__str__())
 
 
 class Rate(ActionBase):
     star_rate = models.IntegerField(default=5)
-    tour = models.ForeignKey('Tour',on_delete=models.CASCADE,related_name='rates',null=True)
+    tour = models.ForeignKey('Tour',on_delete=models.CASCADE,related_name='rate',null=True)
+    def __str__(self):
+        return " \"{0}\" --- \"{1}\" ".format(self.user.__str__(),self.tour.__str__())
+    class Meta:
+        unique_together = ('user', 'tour')
 
 class TypeOfPayment(models.Model):
     payment_type = models.CharField(max_length=50, null=False)
