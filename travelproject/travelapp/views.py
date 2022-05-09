@@ -15,6 +15,8 @@ from django.contrib.auth import  authenticate
 from .perms import *
 from decimal import Decimal
 from datetime import datetime
+import random,hashlib
+from .utils import *
 
 
 
@@ -124,8 +126,8 @@ class TourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
         rate = tour.rate
         rate = rate.select_related('user')
         paginator = pagination.PageNumberPagination()
-        pagination.PageNumberPagination.page_size = 10
-        comments = paginator.paginate_queryset(rate, request)
+        pagination.PageNumberPagination.page_size = 1
+        rate = paginator.paginate_queryset(rate, request)
         return paginator.get_paginated_response(RateSerializer(rate, many=True).data)
 
 
@@ -139,8 +141,8 @@ class BookTourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPI
         return [OwnerPermisson()]
     def create(self, request):
         err_msg = None
-        user_int = request.data.get('user')
-        user = User.objects.get(pk = user_int)
+        # user = User.objects.get(pk = request.data.get('user'))
+        user = request.user
         tour = Tour.objects.get(pk = request.data.get('tour'))
         check_time = tour.departure_date <= datetime.now().date()
         if user:
@@ -235,12 +237,62 @@ Mọi thắc mắc và yêu cầu hỗ trợ xin gửi về địa chỉ
                         status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserViewSet(viewsets.ViewSet,generics.CreateAPIView):
+class UserViewSet(viewsets.ViewSet,generics.CreateAPIView,generics.UpdateAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
-    @action(methods=['post'], url_path='reset_password', detail=False)
+    permission_classes = [permissions.AllowAny]
+    def get_permissions(self):
+        if self.action in ['partial_update','update']:
+            return [UserOwnerPermisson()]
+        return [permissions.AllowAny()]
+    @action(methods=['post'], url_path='reset_password', detail= False)
     def reset_password(self,request):
-        pass
+        email = request.data.get('email')
+        if email:
+            user = User.objects.filter(email = email).first()
+            if user:
+                code = random_for_confirm_code()
+                CodeConfirm.objects.update_or_create(user = user, defaults={
+                    'code': str(hashlib.sha256(str(code).encode("utf-8")).hexdigest())
+                })
+                subject = "Xác nhận reset mật khẩu trên hệ thống Travel Agency OU"
+                content = """
+                Chào {0}
+                Chúng tôi đã nhận yêu cầu reset mật khẩu cho tài khoản của bạn.
+                Mã xác nhận cho tài khoản của bạn là: {1}
+                Nếu xác nhận thì đây cũng chính là mật khẩu mới của bạn.
+                Mọi thắc mắc và yêu cầu hỗ trợ xin gửi về địa chỉ travel.agency.ou@gmail.com.
+                                        """.format(user.username,code)
+                send_email = EmailMessage(subject, content, to=[email])
+                send_email.send()
+                return Response(data={"message": "Send email confirm successfully"}, status=status.HTTP_200_OK)
+            else:
+                return Response(data={"error_message":"User not found"},status = status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+    @action(methods=['post'], url_path='reset_password/confirm', detail=False)
+    def confirm(self,request):
+        confirm_code = request.data.get('confirm_code')
+        email = request.data.get('email')
+        if email and confirm_code:
+            user = User.objects.filter(email=email).first()
+            if user:
+                code_obj = CodeConfirm.objects.filter(user = user).first()
+                if code_obj:
+                    if str(code_obj.code).__eq__(str(hashlib.sha256(str(confirm_code).encode("utf-8")).hexdigest())):
+                        user.set_password(str(confirm_code))
+                        user.save()
+                        code_obj.delete()
+                        return Response(data={"message":"Confirm successfully"},status = status.HTTP_200_OK)
+                    else:
+                        return Response(data={"error_message":"Wrong code"},status = status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response(data={"error_message":"Confirm code error"},status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(data={"error_message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class SendMailAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -294,7 +346,7 @@ class BillViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
     #thanh toan xong phai gui mail
 
 
-@api_view(['GET','POST'])
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
     if request.method == 'POST':
@@ -306,10 +358,6 @@ def login_view(request):
             return Response(data={'message':"Login successfully"},status = status.HTTP_202_ACCEPTED)
         else:
             return Response(data={'error_msg':"Invalid user"}, status=status.HTTP_400_BAD_REQUEST)
-    if request.method == 'GET':
-        user = authenticate(request, username='thunv.admin', password='25122000Thu@')
-        login(request, user)
-        return Response(data={'message': "hahah"}, status=status.HTTP_202_ACCEPTED)
 
 
 @api_view(['GET'])
@@ -411,7 +459,7 @@ class CommentNewsViewSet(viewsets.ViewSet,generics.UpdateAPIView,generics.Destro
 
 class RateViewSet(viewsets.ViewSet,generics.UpdateAPIView,generics.DestroyAPIView):
     queryset = Rate.objects.all()
-    serializer_class = CreateRateNewsSerializer
+    serializer_class = CreateRateSerializer
     def get_permissions(self):
         if self.action in ['partial_update','update', 'destroy']:
             return [OwnerPermisson()]
@@ -428,7 +476,7 @@ class RateViewSet(viewsets.ViewSet,generics.UpdateAPIView,generics.DestroyAPIVie
                 r, _ = Rate.objects.get_or_create(tour = tour, user=user)
                 r.star_rate = star_rate
                 r.save()
-                return Response(data=CreateRateNewsSerializer(r).data,status=status.HTTP_201_CREATED)
+                return Response(data=CreateRateSerializer(r).data,status=status.HTTP_201_CREATED)
             return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data={"error_message":"User not found"},status = status.HTTP_400_BAD_REQUEST)

@@ -156,6 +156,10 @@ class MyAdminSite(admin.AdminSite):
             results_book_tour = BookTour.objects.filter(created_date__year = date.today().year)\
                 .annotate(month=TruncMonth('created_date')).values('month')\
                 .annotate(c=Count('pk')).values('month', 'c')
+            bill_momo = Bill.objects.filter(payment_state=True, created_date__year=date.today().year,payment_type = TypeOfPayment.objects.get(pk = 2)).count()
+            bill_zalopay = Bill.objects.filter(payment_state=True, created_date__year=date.today().year,payment_type = TypeOfPayment.objects.get(pk = 3)).count()
+            bill_cash = bill_paid_total - (bill_zalopay + bill_momo)
+            bill_paid_data = [bill_cash,bill_momo,bill_zalopay]
             for i in range(12):
                 flag = False
                 for rs in results_book_tour:
@@ -172,6 +176,7 @@ class MyAdminSite(admin.AdminSite):
                 'bill_paid_total':bill_paid_total,
                 'current_year': date.today().year,
                 'data_book_tour': data_book_tour,
+                'bill_paid_data':bill_paid_data,
             })
 
 

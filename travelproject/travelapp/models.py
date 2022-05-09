@@ -12,6 +12,7 @@ class Gender(models.Model):
 
 
 class User(AbstractUser):
+    email = models.EmailField(unique=True)
     gender = models.ForeignKey('Gender',related_name='users',null= True,on_delete=models.SET_NULL)
     date_of_birth = models.DateField(null=True)
     avatar = CloudinaryField('avatar',default = '', null = True)
@@ -141,3 +142,8 @@ class Bill(ModelBase):
     total_price = models.FloatField(default=0)
     def __str__(self):
         return "Bill --- {}".format(self.book_tour.__str__())
+
+
+class CodeConfirm(models.Model):
+    user = models.OneToOneField('User',on_delete=models.CASCADE,primary_key=True)
+    code = models.CharField(max_length=100)

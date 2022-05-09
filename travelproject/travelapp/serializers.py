@@ -116,6 +116,13 @@ class CommentTourSerializer(ModelSerializer):
         model = CommentTour
 
 
+class RateSerializer(ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        exclude = ['tour']
+        model = Rate
+
+
 class CreateCommentTourSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentTour
@@ -138,7 +145,7 @@ class CreateCommentNewsSerializer(serializers.ModelSerializer):
         }
 
 
-class CreateRateNewsSerializer(serializers.ModelSerializer):
+class CreateRateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rate
         fields = ['id','star_rate', 'tour', 'user']
