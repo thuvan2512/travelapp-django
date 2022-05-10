@@ -19,7 +19,10 @@ router.register(prefix="rate",viewset = views.RateViewSet,basename='rate')
 urlpatterns = [
     path('', include(router.urls)),
     path('admin/', admin_site.urls),
-    path('send_mail/', views.SendMailAPIView.as_view(), name='send-mail'),
+    path('send_mail/', views.SendMailAPIView.as_view(), name='send_mail'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('revenue_stats/month/', views.RevenueStatsMonthView.as_view(), name='revenue_stats_month'),
+    path('revenue_stats/year/', views.RevenueStatsYearView.as_view(), name='revenue_stats_year'),
+    path('revenue_stats/quarterly/', views.RevenueStatsQuarterlyView.as_view(), name='revenue_stats_quarterly'),
 ]

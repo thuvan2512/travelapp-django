@@ -1,5 +1,5 @@
 from django.core.mail import send_mail, EmailMessage
-from django.db.models import Q
+from django.db.models import Q, Count, Sum
 from django.shortcuts import render
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, generics,permissions,status
@@ -14,7 +14,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth import  authenticate
 from .perms import *
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime,date
 import random,hashlib
 from .utils import *
 
@@ -55,6 +55,7 @@ class AttractionViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveA
         if kw:
             query = query.filter(location__icontains=kw)
         return query
+
     @action(methods=['get'], detail=True, url_path='tours')
     def get_tours(self, request, pk):
         tours = self.get_object().tours
@@ -96,16 +97,19 @@ class TourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
                 query = query.filter(Q(price_for_adults__lte=Decimal(price_to)) | \
                                      Q(price_for_children__lte=Decimal(price_to)))
         return query
+
     @action(methods=['get'], detail=True, url_path='customers',permission_classes = [permissions.IsAuthenticated])
     def get_customers(self, request, pk):
         customers = self.get_object().customers
         return Response(data=CustomerSerializer(customers, many=True, context={'request': request}).data,
                         status=status.HTTP_200_OK)
+
     @action(methods=['get'], detail=True, url_path='tags')
     def get_tags(self, request, pk):
         tags = self.get_object().tag
         return Response(data=TagSerializer(tags, many=True, context={'request': request}).data,
                         status=status.HTTP_200_OK)
+
     @action(methods=['get'], detail=True, url_path='images')
     def get_images(self, request, pk):
         images = self.get_object().images
@@ -120,6 +124,7 @@ class TourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
         pagination.PageNumberPagination.page_size = 10
         comments = paginator.paginate_queryset(comments, request)
         return paginator.get_paginated_response(CommentTourSerializer(comments, many=True).data)
+
     @action(methods=['get'], url_path='rate', detail=True,permission_classes=[permissions.AllowAny])
     def get_rate(self, request, pk):
         tour = self.get_object()
@@ -170,6 +175,7 @@ class BookTourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPI
                 return Response(data={
                     'error_msg': err_msg
                 },status=status.HTTP_400_BAD_REQUEST)
+
     @action(methods=['get'], detail=True, url_path='total_price',permission_classes = [permissions.IsAuthenticated])
     def get_total_price(self, request, pk):
         book_tour =  self.get_object()
@@ -245,6 +251,7 @@ class UserViewSet(viewsets.ViewSet,generics.CreateAPIView,generics.UpdateAPIView
         if self.action in ['partial_update','update']:
             return [UserOwnerPermisson()]
         return [permissions.AllowAny()]
+
     @action(methods=['post'], url_path='reset_password', detail= False)
     def reset_password(self,request):
         email = request.data.get('email')
@@ -270,6 +277,7 @@ class UserViewSet(viewsets.ViewSet,generics.CreateAPIView,generics.UpdateAPIView
                 return Response(data={"error_message":"User not found"},status = status.HTTP_404_NOT_FOUND)
         else:
             return Response(status = status.HTTP_400_BAD_REQUEST)
+
     @action(methods=['post'], url_path='reset_password/confirm', detail=False)
     def confirm(self,request):
         confirm_code = request.data.get('confirm_code')
@@ -375,7 +383,11 @@ class NewsViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
     def get_queryset(self):
         news = self.queryset
         news = news.select_related('author')
+        kw = self.request.query_params.get('kw')
+        if kw:
+            news = news.filter(title__icontains=kw)
         return news
+
     @action(methods=['post'], url_path='like', detail=True,permission_classes = [permissions.IsAuthenticated])
     def like(self, request, pk):
         news = self.get_object()
@@ -480,3 +492,77 @@ class RateViewSet(viewsets.ViewSet,generics.UpdateAPIView,generics.DestroyAPIVie
             return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(data={"error_message":"User not found"},status = status.HTTP_400_BAD_REQUEST)
+
+
+class RevenueStatsMonthView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def post(self,request):
+        revenue_stats_month_str = request.data.get('revenue_stats_month')
+        try:
+            revenue_stats_month = datetime.strptime(revenue_stats_month_str, '%Y-%m')
+        except:
+            return Response(data={"error_msg": "cannot be left blank"},
+                        status=status.HTTP_400_BAD_REQUEST)
+        else:
+            if revenue_stats_month:
+                count_book_tour = BookTour.objects.filter(created_date__year=revenue_stats_month.year,created_date__month=revenue_stats_month.month).count()
+                count_bill_paid = Bill.objects.filter(payment_state=True, created_date__year=revenue_stats_month.year,created_date__month=revenue_stats_month.month).count()
+                total_revenue = Bill.objects.filter(payment_state=True, created_date__year=revenue_stats_month.year,created_date__month=revenue_stats_month.month). \
+                    aggregate(sum=Sum('total_price'))['sum']
+                return Response(data={
+                    "count_book_tour":count_book_tour,
+                    "count_bill_paid": count_bill_paid,
+                    "total_revenue":total_revenue,
+                }, status=status.HTTP_200_OK)
+            return Response(data={"error_msg": "revenue_stats_month not found"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class RevenueStatsYearView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def post(self, request):
+        revenue_stats_year = request.data.get('revenue_stats_year')
+        try:
+            revenue_stats_year = int(revenue_stats_year)
+        except:
+            return Response(data={"error_msg": "cannot be left blank"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            if revenue_stats_year:
+                count_book_tour = BookTour.objects.filter(created_date__year=revenue_stats_year).count()
+                count_bill_paid = Bill.objects.filter(payment_state=True, created_date__year=revenue_stats_year).count()
+                total_revenue = Bill.objects.filter(payment_state=True, created_date__year=revenue_stats_year). \
+                    aggregate(sum=Sum('total_price'))['sum']
+                return Response(data={
+                    "count_book_tour": count_book_tour,
+                    "count_bill_paid": count_bill_paid,
+                    "total_revenue": total_revenue,
+                }, status=status.HTTP_200_OK)
+            return Response(data={"error_msg": "revenue_stats_year not found"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class RevenueStatsQuarterlyView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def post(self,request):
+        revenue_stats_from_str = request.data.get('revenue_stats_from')
+        revenue_stats_to_str = request.data.get('revenue_stats_to')
+        try:
+            revenue_stats_from = datetime.strptime(revenue_stats_from_str, '%Y-%m-%d')
+            revenue_stats_to = datetime.strptime(revenue_stats_to_str, '%Y-%m-%d')
+        except:
+            return Response(data={"error_msg": "cannot be left blank"},
+                        status=status.HTTP_400_BAD_REQUEST)
+        else:
+            if revenue_stats_from and revenue_stats_to:
+                count_book_tour = BookTour.objects.filter(created_date__gte = revenue_stats_from,created_date__lte=revenue_stats_to).count()
+                count_bill_paid = Bill.objects.filter(payment_state=True, created_date__gte = revenue_stats_from,created_date__lte=revenue_stats_to).count()
+                total_revenue = Bill.objects.filter(payment_state=True, created_date__gte = revenue_stats_from,created_date__lte=revenue_stats_to). \
+                    aggregate(sum=Sum('total_price'))['sum']
+                return Response(data={
+                    "count_book_tour":count_book_tour,
+                    "count_bill_paid": count_bill_paid,
+                    "total_revenue":total_revenue,
+                }, status=status.HTTP_200_OK)
+            return Response(data={"error_msg": "revenue_stats_quarterly not found"},
+                            status=status.HTTP_400_BAD_REQUEST)

@@ -133,7 +133,7 @@ class PermissionAdmin(admin.ModelAdmin):
 
 class BillAdmin(admin.ModelAdmin):
     model = Bill
-    list_filter = ('payment_state','payment_type','total_price')
+    list_filter = ('payment_state','payment_type')
 
 
 class MyAdminSite(admin.AdminSite):
@@ -191,7 +191,7 @@ admin_site.register(Permission,PermissionAdmin)
 admin_site.register(Group)
 admin_site.register(BookTour,BookTourAdmin)
 admin_site.register(Tag,TagAdmin)
-admin_site.register(Bill)
+admin_site.register(Bill,BillAdmin)
 admin_site.register(CommentNews)
 admin_site.register(CommentTour)
 admin_site.register(Rate)
