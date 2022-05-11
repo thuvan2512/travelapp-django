@@ -54,6 +54,12 @@ AUTH_USER_MODEL = 'travelapp.User'
 CKEDITOR_UPLOAD_PATH = "images/ckeditor/"
 MEDIA_ROOT = '%s/travelapp/static/' % BASE_DIR
 
+OAUTH2_INFO = {
+    'client_id':'2lUs3JLP2zLm87joP7G8zXO3AGJa3iVAFUllIoKr',
+    'client_secret':'BqrwHDg4sXN8TJ7jKCI6s8bQnXyG0w1dOD9QLLGGhtSlOE70F7kZqKlkudIdFfzAnXqeD7kw4iVsXoKBpNIbKT2k8272Wudmzb3Z1K8IRAeV10Tdjxn48ehAbVSo4GNt'
+}
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

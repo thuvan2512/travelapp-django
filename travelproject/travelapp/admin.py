@@ -28,8 +28,8 @@ class TagAdmin(admin.ModelAdmin):
 class MyUserAdmin(UserAdmin):
     model = User
     search_fields = ('username','first_name','last_name')
-    list_display = ('username','last_name','first_name','last_login','date_joined')
-    list_filter = ()
+    list_display = ('username','last_name','first_name','last_login')
+    list_filter = ('is_staff','is_superuser','is_customer')
     readonly_fields = ('last_login','date_joined','avatar_view')
     def avatar_view(self, user):
         if (user.avatar):

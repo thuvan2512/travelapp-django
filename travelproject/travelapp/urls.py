@@ -20,6 +20,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('admin/', admin_site.urls),
     path('send_mail/', views.SendMailAPIView.as_view(), name='send_mail'),
+    path('oauth2_info/', views.AuthInfo.as_view(), name='oauth2-info'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('revenue_stats/month/', views.RevenueStatsMonthView.as_view(), name='revenue_stats_month'),

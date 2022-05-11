@@ -17,6 +17,8 @@ from decimal import Decimal
 from datetime import datetime,date
 import random,hashlib
 from .utils import *
+from rest_framework.parsers import MultiPartParser
+from django.conf import settings
 
 
 
@@ -39,7 +41,7 @@ class TagViewSet(viewsets.ViewSet,generics.RetrieveAPIView,generics.ListAPIView)
     @action(methods=['get'], detail=True, url_path='tours')
     def get_tours(self, request, pk):
         tours = self.get_object().tours
-        return Response(data=TourSerializer(tours, many=True, context={'request': request}).data,
+        return Response(data=TourSerializer(tours, many=True).data,
                         status=status.HTTP_200_OK)
 
 
@@ -58,8 +60,12 @@ class AttractionViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveA
 
     @action(methods=['get'], detail=True, url_path='tours')
     def get_tours(self, request, pk):
-        tours = self.get_object().tours
-        return Response(data=TourSerializer(tours, many=True, context={'request': request}).data,
+        # tours = self.get_object().tours
+        tours = Attraction.objects.get(pk = pk).tours
+        kw = self.request.query_params.get('kw')
+        if kw is not None:
+            tours = tours.filter(name__icontains = kw)
+        return Response(data=TourSerializer(tours, many=True).data,
                         status=status.HTTP_200_OK)
         # paginator = pagination.PageNumberPagination()
         # pagination.PageNumberPagination.page_size = 2
@@ -73,6 +79,7 @@ class TourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
     permission_classes = [permissions.AllowAny]
     def get_queryset(self):
         query = self.queryset
+        query = query.select_related('attraction')
         kw = self.request.query_params.get('kw')
         price_from = self.request.query_params.get('price_from')
         price_to = self.request.query_params.get('price_to')
@@ -243,14 +250,18 @@ Mọi thắc mắc và yêu cầu hỗ trợ xin gửi về địa chỉ
                         status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserViewSet(viewsets.ViewSet,generics.CreateAPIView,generics.UpdateAPIView):
+class UserViewSet(viewsets.ViewSet,generics.RetrieveAPIView,generics.CreateAPIView,generics.UpdateAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
+    parser_classes = [MultiPartParser,]
     def get_permissions(self):
-        if self.action in ['partial_update','update']:
+        if self.action in ['partial_update','update','retrieve','current_user']:
             return [UserOwnerPermisson()]
         return [permissions.AllowAny()]
+    @action(methods=['get'], url_path='current_user', detail= False)
+    def current_user(self,request):
+        return  Response(data=UserSerializer(request.user).data,status = status.HTTP_200_OK)
 
     @action(methods=['post'], url_path='reset_password', detail= False)
     def reset_password(self,request):
@@ -566,3 +577,7 @@ class RevenueStatsQuarterlyView(APIView):
                 }, status=status.HTTP_200_OK)
             return Response(data={"error_msg": "revenue_stats_quarterly not found"},
                             status=status.HTTP_400_BAD_REQUEST)
+
+class AuthInfo(APIView):
+    def get(self,request):
+        return Response(data=settings.OAUTH2_INFO,status=status.HTTP_200_OK)

@@ -33,8 +33,13 @@ class ImageTourSerializer(ModelSerializer):
             },
         }
 
+class AttractionCompactSerializer(ModelSerializer):
+    class Meta:
+        model = Attraction
+        fields = ['location']
 
 class TourSerializer(ModelSerializer):
+    attraction = AttractionCompactSerializer()
     class Meta:
         model = Tour
         exclude = ['customers','tag']
@@ -82,6 +87,7 @@ class UserSerializer(ModelSerializer):
         data = validated_data.copy()
         user = User(**data)
         user.set_password(user.password)
+        user.is_customer = True
         user.save()
         return user
 class TypeOfPaymentSerializer(ModelSerializer):
