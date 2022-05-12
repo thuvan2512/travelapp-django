@@ -147,3 +147,9 @@ class Bill(ModelBase):
 class CodeConfirm(models.Model):
     user = models.OneToOneField('User',on_delete=models.CASCADE,primary_key=True)
     code = models.CharField(max_length=100)
+
+
+class NewsView(models.Model):
+    news = models.OneToOneField('News',on_delete= models.CASCADE,primary_key=True)
+    views = models.IntegerField(default=0)
+    updated_date = models.DateTimeField(auto_now=True)

@@ -28,7 +28,8 @@ class TagAdmin(admin.ModelAdmin):
 class MyUserAdmin(UserAdmin):
     model = User
     search_fields = ('username','first_name','last_name')
-    list_display = ('username','last_name','first_name','last_login')
+    list_display = ('pk','username','last_name','first_name')
+    list_display_links = ('username',)
     list_filter = ('is_staff','is_superuser','is_customer')
     readonly_fields = ('last_login','date_joined','avatar_view')
     def avatar_view(self, user):
@@ -94,7 +95,8 @@ class ImageTourInlineAdmin(admin.TabularInline):
 class TourAdmin(admin.ModelAdmin):
     model = Tour
     exclude = ('tag',)
-    list_display = ('name','attraction')
+    list_display = ('pk','name','attraction')
+    list_display_links = ('name',)
     search_fields = ('name',)
     form = TourForm
     inlines = [TourTagInlineAdmin,ImageTourInlineAdmin]
@@ -122,7 +124,8 @@ class ImageTourAdmin(admin.ModelAdmin):
 
 
 class BookTourAdmin(admin.ModelAdmin):
-    list_display = ('name_display','created_date','updated_date')
+    list_display = ('pk','name_display','created_date','updated_date')
+    list_display_links = ('name_display',)
     def name_display(self,obj):
         return obj.__str__()
 

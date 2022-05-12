@@ -33,10 +33,12 @@ class ImageTourSerializer(ModelSerializer):
             },
         }
 
+
 class AttractionCompactSerializer(ModelSerializer):
     class Meta:
         model = Attraction
         fields = ['location']
+
 
 class TourSerializer(ModelSerializer):
     attraction = AttractionCompactSerializer()
@@ -60,10 +62,17 @@ class CustomerSerializer(ModelSerializer):
             },
         }
 
+
 class BookTourSerializer(ModelSerializer):
     class Meta:
         model = BookTour
         fields = '__all__'
+
+class CreateBookTourSerializer(ModelSerializer):
+    class Meta:
+        model = BookTour
+        fields = ["num_of_adults","num_of_children","user","tour"]
+
 
 class UserSerializer(ModelSerializer):
     avatar_path = serializers.SerializerMethodField(source='avatar')
@@ -90,10 +99,14 @@ class UserSerializer(ModelSerializer):
         user.is_customer = True
         user.save()
         return user
+
+
 class TypeOfPaymentSerializer(ModelSerializer):
     class Meta:
         model = TypeOfPayment
         fields = ['payment_type']
+
+
 
 
 class BillSerializer(ModelSerializer):
@@ -160,3 +173,9 @@ class CreateRateSerializer(serializers.ModelSerializer):
                 'read_only': True
             }
         }
+
+
+class NewsViewSerializer(ModelSerializer):
+    class Meta:
+        model = NewsView
+        fields = ['news','views', 'updated_date']

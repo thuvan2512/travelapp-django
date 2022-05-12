@@ -19,6 +19,7 @@ import random,hashlib
 from .utils import *
 from rest_framework.parsers import MultiPartParser
 from django.conf import settings
+from django.db.models import F
 
 
 
@@ -151,6 +152,11 @@ class BookTourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPI
         if self.action in ['create']:
             return [permissions.IsAuthenticated()]
         return [OwnerPermisson()]
+
+    def get_serializer_class(self):
+        if self.action in ['create']:
+            return [CreateBookTourSerializer]
+        return [BookTourSerializer]
     def create(self, request):
         err_msg = None
         # user = User.objects.get(pk = request.data.get('user'))
@@ -335,7 +341,7 @@ class SendMailAPIView(APIView):
         return Response(data={'error_msg': error_msg},
                             status=status.HTTP_400_BAD_REQUEST)
 
-class BillViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView):
+class BillViewSet(viewsets.ViewSet,generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = BillSerializer
     queryset = Bill.objects.filter(active = True)
@@ -354,14 +360,102 @@ class BillViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
     #     except Bill.DoesNotExist:
     #         return Response(status=status.HTTP_404_NOT_FOUND)
     @action(methods=['post'], url_path='payment_by_cash', detail=True)
-    def payment_by_cash(self,request):
-        pass
+    def payment_by_cash(self,request,pk):
+        bill = self.get_object()
+        if bill:
+            if bill.payment_state == False:
+                bill.payment_state = True
+                bill.payment_type = TypeOfPayment.objects.get(pk = 1)
+                bill.save()
+                book_tour = BookTour.objects.get(pk = bill.pk)
+                email = book_tour.user.email
+                subject = "Biên nhận thanh toán"
+                content = """
+                Chào {0}
+                Chúng tôi đã ghi nhận thanh toán của bạn.
+                Chi tiết:
+                Mã thanh toán: {1}
+                Tên tour: {2}
+                Tên khách hàng: {5}
+                Tổng thanh toán: {3:,.0f} VND
+                Hình thức thanh toán: {4}
+                Ngày thanh toán: {6}
+                Cám ơn bạn đã đồng hành cùng Travel Agency OU
+                Mọi thắc mắc và yêu cầu hỗ trợ xin gửi về địa chỉ travel.agency.ou@gmail.com.
+                """.format(book_tour.user.username,bill.pk,book_tour.tour.name,bill.total_price,
+                           bill.payment_type.payment_type, book_tour.user.first_name +" "+ book_tour.user.last_name,bill.updated_date)
+                if email and subject and content:
+                    send_email = EmailMessage(subject, content, to=[email])
+                    send_email.send()
+                return Response(data={"message":"Payment successfully"},status = status.HTTP_200_OK)
+            else:
+                return Response(data={"message":"Bill paid"},status = status.HTTP_200_OK)
+        return Response(status = status.HTTP_404_NOT_FOUND)
     @action(methods=['post'], url_path='payment_by_momo', detail=True)
-    def payment_by_momo(self,request):
-        pass
+    def payment_by_momo(self,request,pk):
+        bill = self.get_object()
+        if bill:
+            if bill.payment_state == False:
+                bill.payment_state = True
+                bill.payment_type = TypeOfPayment.objects.get(pk = 2)
+                bill.save()
+                book_tour = BookTour.objects.get(pk = bill.pk)
+                email = book_tour.user.email
+                subject = "Biên nhận thanh toán"
+                content = """
+                Chào {0}
+                Chúng tôi đã ghi nhận thanh toán của bạn.
+                Chi tiết:
+                Mã thanh toán: {1}
+                Tên tour: {2}
+                Tên khách hàng: {5}
+                Tổng thanh toán: {3:,.0f} VND
+                Hình thức thanh toán: {4}
+                Ngày thanh toán: {6}
+                Cám ơn bạn đã đồng hành cùng Travel Agency OU
+                Mọi thắc mắc và yêu cầu hỗ trợ xin gửi về địa chỉ travel.agency.ou@gmail.com.
+                """.format(book_tour.user.username,bill.pk,book_tour.tour.name,bill.total_price,
+                           bill.payment_type.payment_type, book_tour.user.first_name +" "+ book_tour.user.last_name,bill.updated_date)
+                if email and subject and content:
+                    send_email = EmailMessage(subject, content, to=[email])
+                    send_email.send()
+                return Response(data={"message":"Payment successfully"},status = status.HTTP_200_OK)
+            else:
+                return Response(data={"message":"Bill paid"},status = status.HTTP_200_OK)
+        return Response(status = status.HTTP_404_NOT_FOUND)
     @action(methods=['post'], url_path='payment_by_zalopay', detail=True)
-    def payment_by_zalopay(self,request):
-        pass
+    def payment_by_zalopay(self,request,pk):
+        bill = self.get_object()
+        if bill:
+            if bill.payment_state == False:
+                bill.payment_state = True
+                bill.payment_type = TypeOfPayment.objects.get(pk=3)
+                bill.save()
+                book_tour = BookTour.objects.get(pk=bill.pk)
+                email = book_tour.user.email
+                subject = "Biên nhận thanh toán"
+                content = """
+                Chào {0}
+                Chúng tôi đã ghi nhận thanh toán của bạn.
+                Chi tiết:
+                Mã thanh toán: {1}
+                Tên tour: {2}
+                Tên khách hàng: {5}
+                Tổng thanh toán: {3:,.0f} VND
+                Hình thức thanh toán: {4}
+                Ngày thanh toán: {6}
+                Cám ơn bạn đã đồng hành cùng Travel Agency OU
+                Mọi thắc mắc và yêu cầu hỗ trợ xin gửi về địa chỉ travel.agency.ou@gmail.com.
+                """.format(book_tour.user.username, bill.pk, book_tour.tour.name, bill.total_price,
+                           bill.payment_type.payment_type, book_tour.user.first_name + " " + book_tour.user.last_name,
+                           bill.updated_date)
+                if email and subject and content:
+                    send_email = EmailMessage(subject, content, to=[email])
+                    send_email.send()
+                return Response(data={"message": "Payment successfully"}, status=status.HTTP_200_OK)
+            else:
+                return Response(data={"message": "Bill paid"}, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_404_NOT_FOUND)
     #thanh toan xong phai gui mail
 
 
@@ -398,6 +492,14 @@ class NewsViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
         if kw:
             news = news.filter(title__icontains=kw)
         return news
+
+    @action(methods=['get'], url_path='views', detail=True)
+    def views(self, request, pk):
+        view,create = NewsView.objects.get_or_create(news = self.get_object())
+        view.views = F('views') + 1
+        view.save()
+        view.refresh_from_db()
+        return Response(data=NewsViewSerializer(view).data,status = status.HTTP_200_OK)
 
     @action(methods=['post'], url_path='like', detail=True,permission_classes = [permissions.IsAuthenticated])
     def like(self, request, pk):
