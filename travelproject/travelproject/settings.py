@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'travelapp.apps.TravelappConfig',
     'ckeditor',
     'ckeditor_uploader',
+    'cloudinary_storage',
     'cloudinary',
     'rest_framework',
     'drf_yasg',
@@ -76,12 +77,20 @@ INTERNAL_IPS = [
     ]
 ROOT_URLCONF = 'travelproject.urls'
 
-# cloudinary config
+#cloudinary config
 cloudinary.config(
   cloud_name = "dec25",
   api_key = "752682513512722",
   api_secret = "P6Sb5YZCvBFpcMYAyumZnIpewNU"
 )
+# CLOUDINARY_STORAGE = {
+#       'CLOUD_NAME': 'dec25',
+#       'API_KEY': '752682513512722',
+#       'API_SECRET': 'P6Sb5YZCvBFpcMYAyumZnIpewNU',
+# }
+# MEDIA_URL = '/TRAVELAGENCYOU/'
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 
 TEMPLATES = [
     {

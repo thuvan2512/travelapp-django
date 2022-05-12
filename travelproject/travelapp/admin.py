@@ -1,6 +1,8 @@
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from django.contrib import admin
+from django.contrib.admin.sites import NotRegistered
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.contrib.auth.models import Permission,Group
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Sum
@@ -37,6 +39,21 @@ class MyUserAdmin(UserAdmin):
             return mark_safe(
                 "<img src='{cloud_path}{url}' alt='avatar' width='120' />".format(cloud_path = cloud_path,url=user.avatar)
             )
+
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'password1', 'password2', 'email')}
+         ),
+    )
+    form = UserChangeForm
+    add_form = UserCreationForm
+
+    try:
+        admin.site.unregister(User)
+    except NotRegistered:
+        pass
+
     fieldsets = (
         ('Login info', {
             'fields': ('avatar_view','avatar','username', 'password')
