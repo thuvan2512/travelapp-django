@@ -12,7 +12,7 @@ class Gender(models.Model):
 
 
 class User(AbstractUser):
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True,null=True)
     gender = models.ForeignKey('Gender',related_name='users',null= True,on_delete=models.SET_NULL)
     date_of_birth = models.DateField(null=True)
     avatar = CloudinaryField('avatar',default = '', null = True)
