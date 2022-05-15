@@ -263,7 +263,7 @@ class UserViewSet(viewsets.ViewSet,generics.RetrieveAPIView,generics.CreateAPIVi
     parser_classes = [MultiPartParser,]
     def get_permissions(self):
         if self.action in ['partial_update','update','retrieve','current_user']:
-            return [UserOwnerPermisson()]
+            return [UserOwnerPermisson(),AdminPermission()]
         return [permissions.AllowAny()]
     @action(methods=['get'], url_path='current_user', detail= False)
     def current_user(self,request):
