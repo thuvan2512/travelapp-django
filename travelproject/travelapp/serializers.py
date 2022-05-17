@@ -222,9 +222,7 @@ class GoogleSocialAuthSerializer(serializers.Serializer):
 
 
 class FacebookSocialAuthSerializer(serializers.Serializer):
-    """Handles serialization of facebook related data"""
     auth_token = serializers.CharField()
-
     def validate_auth_token(self, auth_token):
         user_data = facebook.Facebook.validate(auth_token)
 

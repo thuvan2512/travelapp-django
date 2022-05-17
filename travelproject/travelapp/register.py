@@ -40,7 +40,6 @@ def register_social_user(provider, user_id, email, name):
             'username': generate_username(name), 'email': email,
             'password': settings.SOCIAL_SECRET}
         user = User.objects.create_user(**user)
-        user.is_verified = True
         user.auth_provider = provider
         user.save()
 
