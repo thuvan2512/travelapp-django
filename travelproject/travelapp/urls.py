@@ -27,4 +27,5 @@ urlpatterns = [
     path('revenue_stats/year/', views.RevenueStatsYearView.as_view(), name='revenue_stats_year'),
     path('revenue_stats/quarterly/', views.RevenueStatsQuarterlyView.as_view(), name='revenue_stats_quarterly'),
     path('social_auth/google/', views.GoogleSocialAuthView.as_view(),name="google_auth"),
+    path('social_auth/facebook/', views.FacebookSocialAuthView.as_view(),name="facebook_auth"),
 ]

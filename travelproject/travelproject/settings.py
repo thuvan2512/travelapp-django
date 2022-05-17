@@ -202,3 +202,10 @@ EMAIL_PORT = 587
 GOOGLE_CLIENT_ID = '907257214038-g3facenq9qtd3m8j670v46v7t7dppu4o.apps.googleusercontent.com'
 GOOGLE_CLIENT_SECRET = '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'
 SOCIAL_SECRET = '@gbklknspajdoughwblwdoiushuolnjhsuyu5w#@#%$'
+# Facebook
+# appId = "3126040770995876"
+
+
+# OAUTH2_PROVIDER = {
+#     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore'
+# }
