@@ -1,4 +1,7 @@
-from . import cloud_path
+from rest_framework.exceptions import AuthenticationFailed
+from .register import register_social_user
+from . import cloud_path, google
+from django.conf import settings
 from .models import *
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
@@ -118,9 +121,19 @@ class BillSerializer(ModelSerializer):
 
 class NewsSerializer(ModelSerializer):
     author = UserSerializer()
+    image_path = serializers.SerializerMethodField(source='image')
+    def get_image_path(self, obj):
+        if obj.image:
+            path = '{cloud_path}{image_name}'.format(cloud_path=cloud_path, image_name=obj.image)
+            return path
     class Meta:
         model = News
-        fields = '__all__'
+        fields = ['title','author','image_path','content']
+        extra_kwargs = {
+            'image_path': {
+                'read_only': True
+            },
+        }
 
 class CommentNewsSerializer(ModelSerializer):
     user = UserSerializer()
@@ -179,3 +192,33 @@ class NewsViewSerializer(ModelSerializer):
     class Meta:
         model = NewsView
         fields = ['news','views', 'updated_date']
+
+
+
+
+class GoogleSocialAuthSerializer(serializers.Serializer):
+    auth_token = serializers.CharField()
+
+    def validate_auth_token(self, auth_token):
+        user_data = google.Google.validate(auth_token)
+        try:
+            user_data['sub']
+        except:
+            raise serializers.ValidationError(
+                'The token is invalid or expired. Please login again.'
+            )
+
+        if user_data['aud'] != settings.GOOGLE_CLIENT_ID:
+            raise AuthenticationFailed('we cannot authenticate for you!!!')
+
+        user_id = user_data['sub']
+        email = user_data['email']
+        name = user_data['name']
+        provider = 'google'
+
+        return register_social_user(
+            provider=provider, user_id =user_id, email=email, name=name)
+
+
+
+

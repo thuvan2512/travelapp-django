@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-%wdcnb&un5*0u9%p2uzp56ekd9nqjv_pk05depntr$5zk#iyor
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','127.0.0.1','travelagencyou.com']
 
 
 # Application definition
@@ -57,8 +57,8 @@ CKEDITOR_UPLOAD_PATH = "images/ckeditor/"
 MEDIA_ROOT = '%s/travelapp/static/' % BASE_DIR
 
 OAUTH2_INFO = {
-    'client_id':'2lUs3JLP2zLm87joP7G8zXO3AGJa3iVAFUllIoKr',
-    'client_secret':'BqrwHDg4sXN8TJ7jKCI6s8bQnXyG0w1dOD9QLLGGhtSlOE70F7kZqKlkudIdFfzAnXqeD7kw4iVsXoKBpNIbKT2k8272Wudmzb3Z1K8IRAeV10Tdjxn48ehAbVSo4GNt'
+    'client_id':'pvYUFjT6EM2DcP0hOTntCaVW853VZeMyslwwPdWb',
+    'client_secret':'gXratf4uI0s2xD0m8aiMY2KOZmNa8N32RczrejiO64UrsjytUPZHmFAj226Iu6HbVv1lw7diRJjArSRF8iPgPQaxnazMLfjcrS8zSXRkzZpPrUuYN1JZ64hSlCe3thVH'
 }
 
 
@@ -197,3 +197,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'travel.agency.ou@gmail.com'
 EMAIL_HOST_PASSWORD = '25122000Thu@'
 EMAIL_PORT = 587
+
+#auth-social config
+GOOGLE_CLIENT_ID = '907257214038-g3facenq9qtd3m8j670v46v7t7dppu4o.apps.googleusercontent.com'
+GOOGLE_CLIENT_SECRET = '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'
+SOCIAL_SECRET = '@gbklknspajdoughwblwdoiushuolnjhsuyu5w#@#%$'

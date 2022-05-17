@@ -1,0 +1,3 @@
+google:
+client_id:396317921999-vb744oeqcrjk3o0rn8ade1d63dm1fedv.apps.googleusercontent.com
+client_secret: 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

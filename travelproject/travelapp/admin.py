@@ -18,8 +18,13 @@ from datetime import date
 class NewsAdmin(admin.ModelAdmin):
     model = News
     search_fields = ('title',)
-    list_display = ('title','author')
+    list_display = ('title','image_view','author')
     list_filter = ('author','created_date','updated_date')
+    def image_view(self, new):
+        if (new.image):
+            return mark_safe(
+                "<img src='{cloud_path}{url}' alt='image' width='50' />".format(cloud_path = cloud_path,url=new.image)
+            )
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -30,7 +35,7 @@ class TagAdmin(admin.ModelAdmin):
 class MyUserAdmin(UserAdmin):
     model = User
     search_fields = ('username','first_name','last_name')
-    list_display = ('pk','username','last_name','first_name')
+    list_display = ('pk','username','auth_provider')
     list_display_links = ('username',)
     list_filter = ('is_staff','is_superuser','is_customer')
     readonly_fields = ('last_login','date_joined','avatar_view')
