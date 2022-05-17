@@ -690,6 +690,7 @@ class AuthInfo(APIView):
 
 class GoogleSocialAuthView(GenericAPIView):
     serializer_class = GoogleSocialAuthSerializer
+    permission_classes = [permissions.AllowAny]
     def post(self, request):
         """
         POST with "auth_token"
