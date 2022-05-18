@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'debug_toolbar',
     'oauth2_provider',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 AUTH_USER_MODEL = 'travelapp.User'
@@ -171,6 +172,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 5,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
 
@@ -203,7 +205,7 @@ GOOGLE_CLIENT_ID = '907257214038-g3facenq9qtd3m8j670v46v7t7dppu4o.apps.googleuse
 GOOGLE_CLIENT_SECRET = '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'
 SOCIAL_SECRET = '@gbklknspajdoughwblwdoiushuolnjhsuyu5w#@#%$'
 # Facebook
-# appId = "3126040770995876"
+# appId = "1351993755298694"
 
 
 # OAUTH2_PROVIDER = {

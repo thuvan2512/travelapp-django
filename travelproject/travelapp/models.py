@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from cloudinary.models import  CloudinaryField
 from ckeditor.fields import RichTextField
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 
@@ -28,6 +29,12 @@ class User(AbstractUser):
         null=False, default=AUTH_PROVIDERS.get('default'))
     def __str__(self):
         return self.username
+    def tokens(self):
+        refresh = RefreshToken.for_user(self)
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        }
 
 
 class ModelBase(models.Model):

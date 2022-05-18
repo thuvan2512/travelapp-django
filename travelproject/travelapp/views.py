@@ -266,7 +266,7 @@ class UserViewSet(viewsets.ViewSet,generics.RetrieveAPIView,generics.CreateAPIVi
     parser_classes = [MultiPartParser,]
     def get_permissions(self):
         if self.action in ['partial_update','update','retrieve','current_user']:
-            return [UserOwnerPermisson(),AdminPermission()]
+            return [UserOwnerPermisson()]
         return [permissions.AllowAny()]
     @action(methods=['get'], url_path='current_user', detail= False)
     def current_user(self,request):
@@ -692,10 +692,6 @@ class GoogleSocialAuthView(GenericAPIView):
     serializer_class = GoogleSocialAuthSerializer
     permission_classes = [permissions.AllowAny]
     def post(self, request):
-        """
-        POST with "auth_token"
-        Send an idtoken as from google to get user information
-        """
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = ((serializer.validated_data)['auth_token'])
@@ -708,11 +704,6 @@ class FacebookSocialAuthView(GenericAPIView):
     serializer_class = FacebookSocialAuthSerializer
 
     def post(self, request):
-        """
-        POST with "auth_token"
-        Send an access token as from facebook to get user information
-        """
-
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = ((serializer.validated_data)['auth_token'])
