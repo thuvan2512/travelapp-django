@@ -45,9 +45,19 @@ class AttractionCompactSerializer(ModelSerializer):
 
 class TourSerializer(ModelSerializer):
     attraction = AttractionCompactSerializer()
+    image_path = serializers.SerializerMethodField(source='image')
+    def get_image_path(self, obj):
+        if obj.image:
+            path = '{cloud_path}{image_name}'.format(cloud_path=cloud_path, image_name=obj.image)
+            return path
     class Meta:
         model = Tour
-        exclude = ['customers','tag']
+        exclude = ['customers','tag','image']
+        extra_kwargs = {
+            'image_path': {
+                'read_only': True
+            },
+        }
 
 
 class CustomerSerializer(ModelSerializer):
