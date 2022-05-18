@@ -68,6 +68,7 @@ class News(ModelBase):
 
 class Tour(ModelBase):
     name = models.CharField(max_length=100,null= False, default="none")
+    image = CloudinaryField('image',default = '', null = True)
     price_for_adults = models.FloatField(default = 0)
     price_for_children = models.FloatField(default = 0)
     departure_date = models.DateField(null = True)

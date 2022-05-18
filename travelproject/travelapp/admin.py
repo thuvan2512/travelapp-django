@@ -117,11 +117,16 @@ class ImageTourInlineAdmin(admin.TabularInline):
 class TourAdmin(admin.ModelAdmin):
     model = Tour
     exclude = ('tag',)
-    list_display = ('pk','name','attraction')
+    list_display = ('pk','name','attraction','image_view')
     list_display_links = ('name',)
     search_fields = ('name',)
     form = TourForm
     inlines = [TourTagInlineAdmin,ImageTourInlineAdmin]
+    def image_view(self, new):
+        if (new.image):
+            return mark_safe(
+                "<img src='{cloud_path}{url}' alt='image' width='50' />".format(cloud_path = cloud_path,url=new.image)
+            )
 
 
 class AttractionAdmin(admin.ModelAdmin):
