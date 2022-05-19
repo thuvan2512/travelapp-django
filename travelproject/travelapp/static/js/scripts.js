@@ -1,5 +1,6 @@
 
 function revenue_stats(option){
+    
     event.preventDefault()
     document.getElementById("title_stats").innerText = "";
     document.getElementById("total_book_tour_stats").innerText = "" ;
