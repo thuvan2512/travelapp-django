@@ -201,8 +201,8 @@ EMAIL_HOST_PASSWORD = '25122000Thu@'
 EMAIL_PORT = 587
 
 #auth-social config
-GOOGLE_CLIENT_ID = '907257214038-g3facenq9qtd3m8j670v46v7t7dppu4o.apps.googleusercontent.com'
-GOOGLE_CLIENT_SECRET = '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'
+GOOGLE_CLIENT_ID = '396317921999-crhff5s34ipke0nehcv5bo42fqj3iuro.apps.googleusercontent.com'
+GOOGLE_CLIENT_SECRET = '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'
 SOCIAL_SECRET = '@gbklknspajdoughwblwdoiushuolnjhsuyu5w#@#%$'
 # Facebook
 # appId = "1351993755298694"
