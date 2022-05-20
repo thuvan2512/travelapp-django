@@ -264,12 +264,36 @@ class UserViewSet(viewsets.ViewSet,generics.RetrieveAPIView,generics.CreateAPIVi
     permission_classes = [permissions.AllowAny]
     parser_classes = [MultiPartParser,]
     def get_permissions(self):
-        if self.action in ['partial_update','update','retrieve','current_user']:
+        if self.action in ['partial_update','update','retrieve','current_user','get_bill_unpaid','get_bill_paid']:
             return [UserOwnerPermisson()]
         return [permissions.AllowAny()]
     @action(methods=['get'], url_path='current_user', detail= False)
     def current_user(self,request):
         return  Response(data=UserSerializer(request.user).data,status = status.HTTP_200_OK)
+
+    @action(methods=['get'], url_path='get_bill_paid', detail= False)
+    def get_bill_paid(self,request):
+        user = request.user
+        if user:
+            bill_paid = Bill.objects.filter(book_tour__user = user,payment_state = True)
+            paginator = pagination.PageNumberPagination()
+            pagination.PageNumberPagination.page_size = 10
+            bill_paid = paginator.paginate_queryset(bill_paid, request)
+            return paginator.get_paginated_response(BillSerializer(bill_paid, many=True).data)
+        else:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['get'], url_path='get_bill_unpaid', detail=False)
+    def get_bill_unpaid(self,request):
+        user = request.user
+        if user:
+            bill_unpaid = Bill.objects.filter(book_tour__user=user, payment_state=False)
+            paginator = pagination.PageNumberPagination()
+            pagination.PageNumberPagination.page_size = 10
+            bill_unpaid = paginator.paginate_queryset(bill_unpaid, request)
+            return paginator.get_paginated_response(BillSerializer(bill_unpaid, many=True).data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['post'], url_path='reset_password', detail= False)
     def reset_password(self,request):
