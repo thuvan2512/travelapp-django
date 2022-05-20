@@ -10,13 +10,13 @@ from rest_framework import serializers
 class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'
+        exclude = []
 
 
 class AttractionSerializer(ModelSerializer):
     class Meta:
         model = Attraction
-        fields = '__all__'
+        exclude = []
 
 
 class ImageTourSerializer(ModelSerializer):
@@ -79,7 +79,7 @@ class CustomerSerializer(ModelSerializer):
 class BookTourSerializer(ModelSerializer):
     class Meta:
         model = BookTour
-        fields = '__all__'
+        exclude = []
 
 class CreateBookTourSerializer(ModelSerializer):
     class Meta:
@@ -126,7 +126,7 @@ class BillSerializer(ModelSerializer):
     payment_type = TypeOfPaymentSerializer()
     class Meta:
         model = Bill
-        fields = '__all__'
+        exclude = []
 
 
 class NewsSerializer(ModelSerializer):
@@ -138,7 +138,7 @@ class NewsSerializer(ModelSerializer):
             return path
     class Meta:
         model = News
-        fields = ['title','author','image_path','content']
+        exclude = ['image']
         extra_kwargs = {
             'image_path': {
                 'read_only': True
