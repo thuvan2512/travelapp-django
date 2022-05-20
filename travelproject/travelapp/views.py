@@ -1,3 +1,8 @@
+import uuid
+import hmac
+import json
+import urllib.request
+
 from django.core.mail import send_mail, EmailMessage
 from django.db.models import Q, Count, Sum
 from django.shortcuts import render
@@ -484,8 +489,8 @@ class BillViewSet(viewsets.ViewSet,generics.RetrieveAPIView):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     # @action(methods=['post'], url_path='payment_by_momo', detail=True)
-    # def payment_by_momo(bill_id, amount, re_url):
-    #
+    # def payment_by_momo(seft):
+    #     bill_id, amount, re_url
     #     # parameters send to MoMo get get payUrl
     #     endpoint = "https://test-payment.momo.vn/v2/gateway/api/create"
     #     partnerCode = "MOMO"
