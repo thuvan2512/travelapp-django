@@ -166,6 +166,6 @@ class CodeConfirm(models.Model):
 
 
 class NewsView(models.Model):
-    news = models.OneToOneField('News',on_delete= models.CASCADE,primary_key=True)
+    news = models.OneToOneField('News',on_delete= models.CASCADE,primary_key=True,related_name='view')
     views = models.IntegerField(default=0)
     updated_date = models.DateTimeField(auto_now=True)
