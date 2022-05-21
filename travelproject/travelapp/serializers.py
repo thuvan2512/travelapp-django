@@ -93,6 +93,7 @@ class UserSerializer(ModelSerializer):
         if obj.avatar:
             path = '{cloud_path}{image_name}'.format(cloud_path=cloud_path, image_name=obj.avatar)
             return  path
+
     class Meta:
         model = User
         exclude = ['user_permissions','groups']
@@ -110,9 +111,9 @@ class UserSerializer(ModelSerializer):
         user = User(**data)
         user.set_password(user.password)
         user.is_customer = True
+        user.is_active = True
         user.save()
         return user
-
 
 class TypeOfPaymentSerializer(ModelSerializer):
     class Meta:

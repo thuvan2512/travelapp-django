@@ -400,6 +400,20 @@ class BillViewSet(viewsets.ViewSet,generics.RetrieveAPIView):
     #         return Response(data=BillSerializer(bill).data, status=status.HTTP_200_OK)
     #     except Bill.DoesNotExist:
     #         return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['get'], url_path='get_tour_info', detail=True)
+    def get_tour_info(self,request,pk):
+        try:
+            book_tour = BookTour.objects.get(pk=pk)
+            if book_tour:
+                tour = book_tour.tour
+                return Response(data=TourSerializer(tour).data, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+
     @action(methods=['post'], url_path='payment_receipt_cash', detail=True)
     def payment_receipt_cash(self,request,pk):
         bill = self.get_object()
@@ -529,6 +543,16 @@ class NewsViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
         news = self.queryset
         news = news.select_related('author')
         kw = self.request.query_params.get('kw')
+        inc = self.request.query_params.get('inc')
+        if inc:
+            try:
+                inc = int(inc)
+                if inc == 1:
+                    news = news.order_by('view__views')
+                elif inc == 0:
+                    news = news.order_by('-view__views')
+            except:
+                pass
         if kw:
             news = news.filter(title__icontains=kw)
         return news
@@ -549,6 +573,17 @@ class NewsViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
         like.state = not like.state
         like.save()
         return Response(status=status.HTTP_201_CREATED)
+    @action(methods=['get'], url_path='like_status', detail=True,permission_classes = [permissions.IsAuthenticated])
+    def like_status(self,request,pk):
+        news = self.get_object()
+        try:
+            like_status = news.likes.filter(user = request.user).first().state
+            if like_status:
+                return Response(data= {'like_status':like_status},status = status.HTTP_200_OK)
+            else:
+                return Response(data={'like_status': False}, status=status.HTTP_200_OK)
+        except:
+            return Response(data={'like_status': False}, status=status.HTTP_200_OK)
 
     @action(methods=['get'], url_path='count_like', detail=True, permission_classes=[permissions.AllowAny])
     def count_like(self, request, pk):
