@@ -95,7 +95,7 @@ class UserSerializer(ModelSerializer):
             return  path
     class Meta:
         model = User
-        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'avatar', 'avatar_path']
+        exclude = ['user_permissions','groups']
         extra_kwargs = {
             'password': {
                 'write_only': True
