@@ -4,7 +4,7 @@ import json
 import urllib.request
 
 from django.core.mail import send_mail, EmailMessage
-from django.db.models import Q, Count, Sum
+from django.db.models import Q, Count, Sum, Avg
 from django.shortcuts import render
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, generics,permissions,status
@@ -146,10 +146,20 @@ class TourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView
         rate = tour.rate
         rate = rate.select_related('user')
         paginator = pagination.PageNumberPagination()
-        pagination.PageNumberPagination.page_size = 1
+        pagination.PageNumberPagination.page_size = 10
         rate = paginator.paginate_queryset(rate, request)
         return paginator.get_paginated_response(RateSerializer(rate, many=True).data)
 
+    @action(methods=['get'], url_path='rate_average', detail=True,permission_classes=[permissions.AllowAny])
+    def get_rate_average(self, request, pk):
+        tour = self.get_object()
+        if tour:
+            star_avetage = Rate.objects.filter(tour = tour).aggregate(avg=Avg('star_rate'))['avg']
+            if not star_avetage:
+                star_avetage = 0
+            return Response(data={"star_avg":star_avetage},status =status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class BookTourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPIView,
                       generics.DestroyAPIView,generics.UpdateAPIView):
@@ -160,10 +170,10 @@ class BookTourViewSet(viewsets.ViewSet,generics.ListAPIView,generics.RetrieveAPI
             return [permissions.IsAuthenticated()]
         return [OwnerPermisson()]
 
-    def get_serializer_class(self):
-        if self.action in ['create']:
-            return [CreateBookTourSerializer]
-        return [BookTourSerializer]
+    # def get_serializer_class(self):
+    #     if self.action in ['create']:
+    #         return [CreateBookTourSerializer()]
+    #     return [BookTourSerializer()]
     def create(self, request):
         err_msg = None
         # user = User.objects.get(pk = request.data.get('user'))
