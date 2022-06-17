@@ -285,6 +285,16 @@ class UserViewSet(viewsets.ViewSet,generics.RetrieveAPIView,generics.CreateAPIVi
     @action(methods=['get'], url_path='current_user', detail= False)
     def current_user(self,request):
         return  Response(data=UserSerializer(request.user).data,status = status.HTTP_200_OK)
+    
+    @action(methods=['post'], url_path='change_password', detail=True)
+    def change_password(self,request,pk):
+        user = request.user
+        password = request.data.get('password')
+        if password:
+            user.set_password(password)
+            user.save()
+            return Response(status = status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['get'], url_path='get_bill_paid', detail= False)
     def get_bill_paid(self,request):
